@@ -1,0 +1,30 @@
+labels:
+  - nop-e2e
+customSteps: |
+  // Read-only against the seeded sample catalog.
+  go to url stored value "storeUrl"
+
+  // Header search finds a seeded product
+  enter "MacBook" into "Search store"
+  click button "Search"
+  check that page contains "Apple MacBook Pro"
+
+  // A result opens its detail page with the expected actions
+  click "Apple MacBook Pro"
+  check that page contains "Apple MacBook Pro"
+  check that page contains "Add to cart"
+  check that page contains "Add to wishlist"
+  check that page contains "Email a friend"
+
+  // Category browse reaches a subcategory and renders the list controls
+  go to url stored value "storeUrl"
+  click "Computers"
+  check that page contains "Notebooks"
+  click "Notebooks"
+  check that page contains "Sort by"
+  check that page contains "Display"
+
+  // A search with no matches
+  enter "zzqqxxnomatch123" into "Search store"
+  click button "Search"
+  check that page contains "No products were found that matched your criteria."

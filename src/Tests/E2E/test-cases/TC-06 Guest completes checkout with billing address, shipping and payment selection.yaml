@@ -1,0 +1,34 @@
+labels:
+  - nop-e2e
+  - product-add-to-cart
+  - cart-proceed-to-checkout
+  - checkout-address-fill
+  - checkout-place-order
+customSteps: |
+  // Guest checkout end to end; seeded AnonymousCheckoutAllowed is true.
+  save "Apple MacBook Pro" as "productName"
+  product-add-to-cart
+
+  click "Shopping cart"
+  check that page contains "Shopping cart"
+
+  // Seeded "Gift wrapping" is required with "No" pre-selected. Asserted here so
+  // a pre-selection regression fails clearly instead of blocking checkout.
+  check that page contains "Gift wrapping"
+
+  cart-proceed-to-checkout
+  check that page contains "Checkout as Guest"
+  click button "Checkout as Guest"
+
+  // Billing address
+  check that page contains "Billing address"
+  enter "Guest" into "First name"
+  enter "Buyer" into "Last name"
+  generate unique email, then enter into "Email" and save as "guestEmail"
+  checkout-address-fill
+  click button "Continue"
+
+  checkout-place-order
+
+  // The confirmation page exposes the order number
+  check that page contains "Order number"

@@ -1,0 +1,36 @@
+labels:
+  - nop-e2e
+  - customer-register-new
+  - product-add-to-cart
+  - cart-proceed-to-checkout
+  - checkout-address-fill
+  - checkout-place-order
+customSteps: |
+  // Same checkout path as the guest case but for an authenticated customer,
+  // then verifies the order surfaces in account history with accurate details.
+  customer-register-new
+
+  save "Apple MacBook Pro" as "productName"
+  product-add-to-cart
+
+  click "Shopping cart"
+  cart-proceed-to-checkout
+
+  // A registered customer goes straight to the billing address step
+  check that page contains "Billing address"
+  enter "Test" into "First name"
+  enter stored value "customerLastName" into "Last name"
+  enter stored value "customerEmail" into "Email"
+  checkout-address-fill
+  click button "Continue"
+
+  checkout-place-order
+
+  // --- Order history ---
+  click "My account"
+  click "Orders"
+  check that page contains "Orders"
+  click "Details"
+  check that page contains "Apple MacBook Pro"
+  check that page contains "1 Test Street"
+  check that page contains "Check / Money Order"

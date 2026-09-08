@@ -1,0 +1,82 @@
+labels:
+  - nop-e2e
+  - admin-login
+  - admin-logout
+  - admin-product-create-new
+  - admin-product-delete
+  - product-add-to-cart
+  - cart-proceed-to-checkout
+  - checkout-address-fill
+customSteps: |
+  // Two things nothing else covers: the gift card recipient fields, and the
+  // checkout branch for a cart that needs no shipping. The product is created
+  // here because nothing in the sample data is non-shippable — "downloadable"
+  // and "needs no shipping" are independent flags.
+
+  // --- A gift card collects recipient details ---
+  go to url stored value "storeUrl"
+  click "Gift Cards"
+  click "$25 Virtual Gift Card"
+  check that page contains "Recipient's Name"
+
+  enter "Ada Recipient" into "Recipient's Name"
+  generate unique email, then enter into "Recipient's Email" and save as "giftRecipientEmail"
+  enter "Test Sender" into "Your Name"
+  generate unique email, then enter into "Your Email" and save as "giftSenderEmail"
+  click button "Add to cart"
+  check that page contains "The product has been added to your shopping cart"
+
+  click "Shopping cart"
+  check that page contains "Ada Recipient"
+
+  click "Remove"
+  check that page contains "Your Shopping Cart is empty!"
+
+  // --- A product that needs no shipping skips the shipping steps ---
+  // A new product arrives with "Shipping enabled" checked, so one click clears
+  // it. The Shipping card is open by default and deliberately not clicked: each
+  // card persists its collapsed state per user, so a click would make this pass
+  // and fail on alternate runs.
+  admin-login
+  admin-product-create-new
+  click on the checkbox to the right of "Shipping enabled"
+  click button "Save and Continue Edit"
+  check that page contains "The product has been updated successfully."
+  admin-logout
+
+  product-add-to-cart
+
+  click "Shopping cart"
+  cart-proceed-to-checkout
+  check that page contains "Checkout as Guest"
+  click button "Checkout as Guest"
+
+  check that page contains "Billing address"
+  enter "Guest" into "First name"
+  enter "Buyer" into "Last name"
+  generate unique email, then enter into "Email" and save as "guestEmail"
+  checkout-address-fill
+  click button "Continue"
+
+  // Billing goes straight to payment information: no shipping steps to drive,
+  // and the payment-method step is bypassed as everywhere else.
+  wait up to 60 seconds until page contains "Mail Personal or Business Check"
+  click button "Continue"
+
+  // Keyed on the method name, not the "Payment Method" heading (see README).
+  wait up to 60 seconds until page contains "Check / Money Order"
+
+  // The assertion the case exists for: the order review renders its shipping
+  // block only for a shippable cart, and "Ground" appears nowhere unless a
+  // shipping method was actually chosen.
+  check that page does not contain "Ground"
+
+  // Same descriptor, and the same two reasons, as the checkout-place-order rule.
+  scroll down until page contains "Total:"
+  click button "Confirm" roughly below "Total:"
+  // Long timeout: order placement is slow under concurrent load.
+  wait up to 180 seconds until page contains "Your order has been successfully processed!"
+
+  // --- Leave no residue ---
+  admin-login
+  admin-product-delete

@@ -1,0 +1,53 @@
+labels:
+  - nop-e2e
+  - customer-register-new
+  - customer-login
+  - customer-logout
+customSteps: |
+  // Own generated customer, seeded product. Seeded ProductReviewsMustBeApproved
+  // is false, so a review is visible immediately.
+  //
+  // Never clicks a review link: the form is inline for signed-in customers, and
+  // the link text flips once any review exists, breaking the next run.
+  customer-register-new
+
+  go to url stored value "searchUrl"
+  click "Search keyword"
+  enter "Apple MacBook Pro" into "Search keyword"
+  press enter
+  check that page contains "Apple MacBook Pro"
+  click "Apple MacBook Pro"
+  check that page contains "Apple MacBook Pro"
+
+  // Submit a review carrying a title unique to this run
+  scroll down to the bottom of the page
+  check that page contains "Write your own review"
+  generate from template "E2E review #####", then enter into "Review title" and save as "reviewTitle"
+  enter "This machine is fast, quiet and very well built. Happy with the purchase." into "Review text"
+  click on the radio button to the left of "Excellent"
+  click button "Submit review"
+  check that page contains "Product review is successfully added."
+
+  // Visible to a guest, which the success banner alone does not prove
+  customer-logout
+  go to url stored value "searchUrl"
+  click "Search keyword"
+  enter "Apple MacBook Pro" into "Search keyword"
+  press enter
+  check that page contains "Apple MacBook Pro"
+  click "Apple MacBook Pro"
+  scroll down to the bottom of the page
+  check that page contains stored value "reviewTitle"
+
+  // The wishlist needs an authenticated customer
+  customer-login
+  go to url stored value "searchUrl"
+  click "Search keyword"
+  enter "Apple MacBook Pro" into "Search keyword"
+  press enter
+  check that page contains "Apple MacBook Pro"
+  click "Apple MacBook Pro"
+  click button "Add to wishlist"
+  check that page contains "The product has been added to your"
+  click "Wishlist"
+  check that page contains "Apple MacBook Pro"
