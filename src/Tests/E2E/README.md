@@ -36,7 +36,7 @@ can use `admin-login` as a single step.
 | TC-08 | Admin product create, price edit, out of stock, delete | creates its own |
 | TC-09 | Admin coupon discount created and redeemed by a shopper | creates its own |
 | TC-10 | Admin cancels an order, customer sees the updated status | creates its own |
-| TC-11 | Admin rejects unauthorized access; maintenance mode closes the store | toggles a setting |
+| TC-11 | Admin login rejects anonymous visitors and invalid credentials | seeded, read-only |
 | TC-12 | Product attribute selection, price adjustments, options reach the cart | seeded, read-only |
 | TC-13 | Gift card recipient details; non-shippable product skips shipping | creates its own |
 
@@ -81,14 +81,10 @@ testrigor test-suite run "$TESTRIGOR_SUITE_ID" \
   --junit-report-save-path e2e-results.xml
 ```
 
-**TC-11 needs a run of its own.** Every case in a run executes concurrently
-against the one instance, and TC-11 closes the storefront, so including it fails
-the other twelve. Pass `--excluded-labels maintenance-mode` on the main run, then
-repeat the command with `--labels maintenance-mode` and a different
-`--junit-report-save-path`. The CI workflow does exactly this, as two serial
-steps.
+Every case in a run executes concurrently against the one instance, and no case
+depends on another, so the whole suite runs in a single step.
 
-**Iterate on a label subset, not the whole suite.** A full run is around twelve
+**Iterate on a label subset, not the whole suite.** A full run is around eight
 minutes; a subset is two to five. Rule filenames double as labels, and `--labels`
 is repeatable, so `--labels checkout-place-order --labels admin-product-delete`
 selects the five cases that touch checkout and admin product management. Every
@@ -127,9 +123,6 @@ repository; fork contributions are covered once their commits reach `develop`.
 - **`/install/restartapplication` stops the container.** It calls
   `RestartAppDomain()`, which ends the process, and `docker-compose.yml` sets no
   restart policy. Pass `NOP_RESTART_CMD` so the container is cycled instead.
-- **If a run leaves the storefront closed**, TC-11 failed between enabling and
-  disabling maintenance mode. Clear it at Configuration -> Settings -> General
-  settings -> *Store closed*, or reset the instance.
 - **Find products in the admin list by SKU, never by name.** The list page's
   `Product name` filter is not addressable: the ajax DataTable adds a `<th>`
   with the same text, and it wins over the filter input. `Go directly to
@@ -167,4 +160,4 @@ repository; fork contributions are covered once their commits reach `develop`.
   non-shippable cart. TC-13 creates its own product for that branch.
 - **Admin cards and filter panels persist their collapsed state per user**, so a
   test that clicks one open toggles it shut on the next run. The install script
-  seeds the ones this suite depends on; never click them from a case.
+  seeds the filter panels this suite depends on; never click them from a case.

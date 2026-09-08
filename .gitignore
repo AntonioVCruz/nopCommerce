@@ -207,6 +207,5 @@ src/Presentation/Nop.Web/wwwroot/sitemaps/*
 !src/Presentation/Nop.Web/wwwroot/sitemaps/Index.htm
 src/packages/*
 src/Tests/Nop.Tests/Connections.resx
-# E2E run reports, written at the repo root by the testRigor CLI
+# E2E run report, written at the repo root by the testRigor CLI
 e2e-results.xml
-e2e-results-maintenance.xml

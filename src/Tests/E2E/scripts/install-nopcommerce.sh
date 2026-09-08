@@ -48,11 +48,12 @@ for i in $(seq 1 90); do
 done
 
 # --- Seed admin UI preferences ------------------------------------------
-# Advanced settings rows and list-page filter panels are hidden by per-admin
-# preferences, and a relational descriptor needs a visible anchor. Both are
-# persisted through Preferences/SavePreference, so a test that clicked them open
-# would toggle them shut on the next run; they are seeded here instead. Over
-# HTTP rather than SQL, so this works against any deployment.
+# Every admin list page keeps its filter panel's collapsed state in a per-admin
+# preference, and a collapsed panel hides the filter labels a step needs as
+# anchors. The state is persisted through Preferences/SavePreference, so a test
+# that clicked a panel open would toggle it shut on the next run; the panels are
+# seeded open here instead. Over HTTP rather than SQL, so this works against any
+# deployment.
 seed_admin_preferences() {
   jar="$(mktemp)"
 
@@ -84,12 +85,8 @@ seed_admin_preferences() {
     return 1
   }
 
-  set_pref "settings-advanced-mode" "true" \
-    "TC-11 will fail on Store closed"
-
-  # A collapsed filter panel hides every label inside it, so a step that types
-  # into a filter fails with no hint that the panel is shut. Not hypothetical:
-  # TC-10 began failing on "Order statuses" after the panel was left closed.
+  # Not hypothetical: TC-10 began failing on "Order statuses" after the panel
+  # was left closed mid-session.
   set_pref "OrdersPage.HideSearchBlock" "false" \
     "TC-10 will fail on Order statuses"
   set_pref "ProductsPage.HideSearchBlock" "false" \

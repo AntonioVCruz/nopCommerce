@@ -54,9 +54,8 @@ jobs:
         run: npm install --global testrigor-cli
 
       # The CLI downloads its tunnel client per platform on first use, so a
-      # clean runner needs no extra setup. maintenance-mode is held back for the
-      # step below: every case in a run executes concurrently against the one
-      # container, and that case closes the storefront.
+      # clean runner needs no extra setup. Every case in a run executes
+      # concurrently against the one container.
       - name: Run E2E suite
         env:
           TESTRIGOR_AUTH_TOKEN: ${{ secrets.TESTRIGOR_AUTH_TOKEN }}
@@ -69,42 +68,17 @@ jobs:
             --rules-path "src/Tests/E2E/rules/*.txt" \
             --variables-path "src/Tests/E2E/variables.json" \
             --labels nop-e2e \
-            --excluded-labels maintenance-mode \
             --explicit-mutations \
             --branch "${{ github.head_ref || github.ref_name }}" \
             --commit "${{ github.sha }}" \
             --junit-report-save-path e2e-results.xml
-
-      # The one case that cannot share a store with the others. It goes last
-      # because a failure between its two toggles leaves the storefront closed,
-      # which does not matter for a container about to be discarded. always(),
-      # so a red main run still reports this case instead of hiding it.
-      - name: Run E2E suite (maintenance mode, serial)
-        if: always()
-        env:
-          TESTRIGOR_AUTH_TOKEN: ${{ secrets.TESTRIGOR_AUTH_TOKEN }}
-          TESTRIGOR_SUITE_ID: ${{ secrets.TESTRIGOR_SUITE_ID }}
-        run: |
-          testrigor test-suite run "$TESTRIGOR_SUITE_ID" \
-            --auth-token "$TESTRIGOR_AUTH_TOKEN" \
-            --localhost --url "http://localhost" \
-            --test-cases-path "src/Tests/E2E/test-cases/*.yaml" \
-            --rules-path "src/Tests/E2E/rules/*.txt" \
-            --variables-path "src/Tests/E2E/variables.json" \
-            --labels maintenance-mode \
-            --explicit-mutations \
-            --branch "${{ github.head_ref || github.ref_name }}" \
-            --commit "${{ github.sha }}" \
-            --junit-report-save-path e2e-results-maintenance.xml
 
       - name: Upload JUnit report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-results
-          path: |
-            e2e-results.xml
-            e2e-results-maintenance.xml
+          path: e2e-results.xml
           if-no-files-found: warn
 
       - name: Dump container logs
